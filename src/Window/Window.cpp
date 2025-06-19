@@ -11,12 +11,17 @@
 #include "../Shader/Shader.h"
 
 
+void GLCheckErrors() {
+    while (const GLenum error = glGetError()) {
+        std::cout << "OpenGL error occurred: "<< std::endl << error << std::endl;
+    }
+}
+
 Window::Window(const std::string& title, const int width, const int height) {
     this->title = title;
     this->width = width;
     this->height = height;
 }
-
 
 void Window::init() {
     if (!glfwInit()) {
@@ -60,16 +65,30 @@ void Window::init() {
         "   color = vec4(0.0, 1.0, 0.0, 1.0);\n"
         "}";
 
-    const auto shader = new Shader(vertexShader, fragmentShader);
+    const auto shader = new Shader("assets/shaders/default.glsl");
     glUseProgram(shader->getProgram());
 
 
     // lets make a triangle :p
     constexpr float positions[] = {
-         0.0f, 0.0f,
-         0.2f, 0.0f,
-         0.0f, 0.2f
+        0.0f, 0.0f, //0
+        0.2f, 0.0f, //1
+        0.0f, 0.2f, //2
+        0.2f, 0.2f, //3
     };
+    constexpr unsigned int indices[] = {
+        /*
+            2-------3
+            |       |
+            |       |
+            0-------1
+        */
+        0,3,1,
+        0,3,2
+    };
+
+
+
 
     GLuint buffer;
     glGenBuffers(1, &buffer);
@@ -79,7 +98,10 @@ void Window::init() {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, nullptr);
     glEnableVertexAttribArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    GLuint ibo;
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     loop();
 
@@ -94,7 +116,8 @@ void Window::loop() {
         glClearColor(0.11f,0.11f,0.18f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        GLCheckErrors();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

@@ -11,7 +11,7 @@
 
 class Shader {
 public:
-    Shader(const std::string& vertex, const std::string& fragment);
+    explicit Shader(const std::string& filepath);
     [[nodiscard]] GLuint getProgram() const;
 private:
     GLuint program;

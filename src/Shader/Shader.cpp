@@ -5,6 +5,7 @@
 #include "Shader.h"
 
 #include <iostream>
+#include <fstream>
 
 GLuint compileShader(const GLenum shaderType, const std::string& shaderSource) {
     const GLuint ShaderID = glCreateShader(shaderType);
@@ -29,9 +30,29 @@ GLuint compileShader(const GLenum shaderType, const std::string& shaderSource) {
     return ShaderID;
 }
 
-Shader::Shader(const std::string& vertex, const std::string& fragment) {
-    const GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertex);
-    const GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragment);
+Shader::Shader(const std::string& filepath) {
+    std::string vertexSrc, fragmentSrc;
+    std::string shaderFileSrc;
+
+    std::ifstream shaderFile(filepath);
+
+    bool readingVertex = true;
+    while (std::getline(shaderFile, shaderFileSrc)) {
+        if (shaderFileSrc == "#type vertex") {
+            readingVertex = true;
+        } else if (shaderFileSrc == "#type fragment") {
+            readingVertex = false;
+        } else {
+            if (readingVertex) {
+                vertexSrc += shaderFileSrc + "\n";
+            } else {
+                fragmentSrc += shaderFileSrc + "\n";
+            }
+        }
+    }
+
+    const GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSrc);
+    const GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSrc);
 
 
     program = glCreateProgram();

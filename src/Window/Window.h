@@ -17,7 +17,7 @@ public:
 private:
     int width, height;
     std::string title;
-    GLFWwindow *window{};
+    GLFWwindow *window;
 };
 
 
